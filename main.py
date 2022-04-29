@@ -18,7 +18,6 @@ st.subheader("Raw Data")
 if your_csv is not None:
 	if your_csv.type == "text/csv":
 		yourdata = pd.read_csv(your_csv)
-		yourdata = yourdata.T
 
 	else:
 		yourdata = pd.read_csv(your_csv, sep='\t')
