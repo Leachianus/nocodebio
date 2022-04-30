@@ -105,34 +105,41 @@ if your_csv is not None:
 
 		your_scaled = StandardScaler().fit_transform(processed_data)
 	your_pca = PCA()
-	your_transformed = your_pca.fit_transform(your_scaled)
-	yourcol_names = [f'Principal Component {i+1}' for i in range(your_transformed.shape[1])]
+	if your_scaled.shape[0] <= 2 or your_scaled.shape[1] <= 2:
+		st.write('Error: Your data should have at least 2 samples and 3 features!')
+	else:
+		your_transformed = your_pca.fit_transform(your_scaled)
+
+		yourcol_names = [f'Principal Component {i+1}' for i in range(your_transformed.shape[1])]
 
 
 
 
-	your_transformed_df = pd.DataFrame(your_transformed, columns=yourcol_names)
-	st.subheader("Select Principal Components to Plot:")
-	yourxvar = st.selectbox('X-axis:', your_transformed_df.columns)
-	youryvar = st.selectbox('Y-axis:', your_transformed_df.columns, index=1)
-	st.subheader("Plot")
-	if select_labels is not None:
-		if feature_radio == "Columns":
-			if len(incompatiblerows) > 0:
-				numericaldata = yourdata.drop(incompatiblerows, axis=0)
-			else: numericaldata = yourdata
-			your_transformed_df.index = numericaldata.index
-
-			your_transformed_df = pd.concat([your_transformed_df, yourdata[select_labels]], axis=1)
+		your_transformed_df = pd.DataFrame(your_transformed, columns=yourcol_names)
+		st.subheader("Select Principal Components to Plot:")
+		yourxvar = st.selectbox('X-axis:', your_transformed_df.columns)
+		if len(your_transformed_df.columns) > 1:
+			youryvar = st.selectbox('Y-axis:', your_transformed_df.columns, index=1)
 		else: 
-			if len(incompatiblecols) > 0:
-				numericaldata = yourdata.drop(incompatiblecols, axis=1)
-			else: numericaldata = yourdata
-			your_transformed_df.index = numericaldata.T.index
-			your_transformed_df = pd.concat([your_transformed_df, numericaldata.T[select_labels]], axis=1)
+			youryvar = st.selectbox('Y-axis:', your_transformed_df.columns)
+		st.subheader("Plot")
+		if select_labels is not None:
+			if feature_radio == "Columns":
+				if len(incompatiblerows) > 0:
+					numericaldata = yourdata.drop(incompatiblerows, axis=0)
+				else: numericaldata = yourdata
+				your_transformed_df.index = numericaldata.index
 
-		st.write(px.scatter(your_transformed_df, x=yourxvar, y=youryvar,color=select_labels))
-	else: st.write(px.scatter(your_transformed_df, x=yourxvar, y=youryvar))
+				your_transformed_df = pd.concat([your_transformed_df, yourdata[select_labels]], axis=1)
+			else: 
+				if len(incompatiblecols) > 0:
+					numericaldata = yourdata.drop(incompatiblecols, axis=1)
+				else: numericaldata = yourdata
+				your_transformed_df.index = numericaldata.T.index
+				your_transformed_df = pd.concat([your_transformed_df, numericaldata.T[select_labels]], axis=1)
+
+			st.write(px.scatter(your_transformed_df, x=yourxvar, y=youryvar,color=select_labels))
+		else: st.write(px.scatter(your_transformed_df, x=yourxvar, y=youryvar))
 
 #st.subheader('Explore loadings')
 
