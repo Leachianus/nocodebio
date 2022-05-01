@@ -3,6 +3,14 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-XXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-XXXXXXXXX');
+</script>
+
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
