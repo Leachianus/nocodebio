@@ -16,6 +16,8 @@ processed_data = None
 
 
 if your_csv is not None:
+	incompatiblecols = []
+	incompatiblerows = []
 	st.subheader("Raw Data")
 	if your_csv.type == "text/csv":
 		yourdata = pd.read_csv(your_csv)
