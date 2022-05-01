@@ -20,6 +20,7 @@ if your_csv is not None:
 	if your_csv.type == "text/csv":
 		yourdata = pd.read_csv(your_csv)
 
+
 	else:
 		yourdata = pd.read_csv(your_csv, sep='\t')
 	st.write(yourdata)
@@ -58,8 +59,9 @@ if your_csv is not None:
 					processed_data = processed_data = processed_data.drop(incompatiblerows, axis=0)
 				if len(incompatiblecols) > 0:
 					processed_data = processed_data = processed_data.drop(incompatiblecols, axis=1)
+			processed_data = processed_data.select_dtypes(include=np.number)
+			processed_data = processed_data.dropna(axis='columns')
 
-			your_scaled = StandardScaler().fit_transform(processed_data)
 		if feature_radio == "Rows":
 			processed_data = yourdata
 			processed_data = processed_data.drop([select_labels], axis=0)
@@ -76,12 +78,15 @@ if your_csv is not None:
 					incompatiblerows.append(processed_data.index[i])
 			if len(incompatiblerows) + len(incompatiblecols) > 0:
 				st.write("Some of your values are non-numeric. Rows and columns with no numeric values will be excluded entirely. For rows and columns with some numeric values, the non-numeric values will be converted to NA by default. You may choose to exclude the entire row or column.")
-				if len(incompatiblerows) > 0:
-					processed_data = processed_data = processed_data.drop(incompatiblerows, axis=0)
 				if len(incompatiblecols) > 0:
-					processed_data = processed_data = processed_data.drop(incompatiblecols, axis=1)
+					processed_data = processed_data.drop(incompatiblecols, axis=1)
+				if len(incompatiblerows) > 0:
+					processed_data = processed_data.drop(incompatiblerows, axis=0)
+			badrows = processed_data.applymap(np.isreal).all(1)
+			badrows = badrows[badrows != 1]
+			processed_data = processed_data.drop(badrows.index)
+			processed_data = processed_data.dropna(axis='index')
 			processed_data = processed_data.T
-			your_scaled = StandardScaler().fit_transform(processed_data)
 
 	else:
 		processed_data = yourdata
@@ -97,17 +102,31 @@ if your_csv is not None:
 			if row_compatibility[i] == 0:
 				incompatiblerows.append(processed_data.index[i])
 		if len(incompatiblerows) + len(incompatiblecols) > 0:
-			st.write("Some of your values are non-numeric. Rows and columns with no numeric values will be excluded entirely. For rows and columns with some numeric values, the non-numeric values will be converted to NA by default. You may choose to exclude the entire row or column.")
+			st.write("Some of your values are non-numeric. First, rows and columns with all non-numeric values are excluded. Then, samples with non-numeric values are excluded.")
 			if len(incompatiblerows) > 0:
-				processed_data = processed_data = processed_data.drop(incompatiblerows, axis=0)
+				processed_data = processed_data.drop(incompatiblerows, axis=0)
 			if len(incompatiblecols) > 0:
-				processed_data = processed_data = processed_data.drop(incompatiblecols, axis=1)
+				processed_data = processed_data.drop(incompatiblecols, axis=1)
 
-		your_scaled = StandardScaler().fit_transform(processed_data)
-	your_pca = PCA()
-	if your_scaled.shape[0] <= 2 or your_scaled.shape[1] <= 2:
-		st.write('Error: Your data should have at least 2 samples and 3 features!')
+		if feature_radio == "Columns":
+			processed_data = processed_data.select_dtypes(include=np.number)
+			processed_data = processed_data.dropna(axis='columns')
+
+		if feature_radio == "Rows":
+			processed_data = processed_data.T
+			processed_data = processed_data.select_dtypes(include=np.number)
+			processed_data = processed_data.dropna(axis='columns')
+			processed_data = processed_data.T
+
+	
+
+
+
+	if processed_data.shape[0] <= 2 or processed_data.shape[1] <= 2:
+		st.write('Error: Your data should have at least 3 samples and 3 features.')
 	else:
+		your_scaled = StandardScaler().fit_transform(processed_data)
+		your_pca = PCA()
 		your_transformed = your_pca.fit_transform(your_scaled)
 
 		yourcol_names = [f'Principal Component {i+1}' for i in range(your_transformed.shape[1])]
