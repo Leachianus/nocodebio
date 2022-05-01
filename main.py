@@ -109,6 +109,7 @@ if your_csv is not None:
 				else:
 					processed_data = processed_data.select_dtypes(include=np.number)
 					processed_data = processed_data.dropna(axis='columns')
+					processed_data = processed_data.T
 
 	else:
 		processed_data = yourdata
@@ -158,6 +159,7 @@ if your_csv is not None:
 
 					processed_data = processed_data.select_dtypes(include=np.number)
 					processed_data = processed_data.dropna(axis='columns')
+					processed_data = processed_data.T
 
 	
 
@@ -198,6 +200,7 @@ if your_csv is not None:
 					if len(incompatiblecols) > 0:
 						numericaldata = yourdata.drop(incompatiblecols, axis=1)
 					else: numericaldata = yourdata
+
 					your_transformed_df.index = numericaldata.T.index
 					your_transformed_df = pd.concat([your_transformed_df, numericaldata.T[select_labels]], axis=1)
 
