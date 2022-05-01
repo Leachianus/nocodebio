@@ -21,6 +21,7 @@ if your_csv is not None:
 		yourdata = pd.read_csv(your_csv)
 
 
+
 	else:
 		yourdata = pd.read_csv(your_csv, sep='\t')
 	st.write(yourdata)
@@ -42,29 +43,78 @@ if your_csv is not None:
 	if select_labels is not None:
 		if feature_radio == "Columns":
 			processed_data = yourdata.drop([select_labels], axis=1)
-			compatibilitymatrix = processed_data.applymap(np.isreal)
-			column_compatibility = list(compatibilitymatrix.sum(axis=0))
-			row_compatibility = list(compatibilitymatrix.sum(axis=1))
-			incompatiblecols = []
-			incompatiblerows = []
-			for i in range(len(column_compatibility)):
-				if column_compatibility[i] == 0:
-					incompatiblecols.append(processed_data.columns[i])
-			for i in range(len(row_compatibility)):
-				if row_compatibility[i] == 0:
-					incompatiblerows.append(processed_data.index[i])
-			if len(incompatiblerows) + len(incompatiblecols) > 0:
-				st.write("Some of your values are non-numeric. Rows and columns with no numeric values will be excluded entirely. For rows and columns with some numeric values, the non-numeric values will be converted to NA by default. You may choose to exclude the entire row or column.")
-				if len(incompatiblerows) > 0:
-					processed_data = processed_data = processed_data.drop(incompatiblerows, axis=0)
-				if len(incompatiblecols) > 0:
-					processed_data = processed_data = processed_data.drop(incompatiblecols, axis=1)
-			processed_data = processed_data.select_dtypes(include=np.number)
-			processed_data = processed_data.dropna(axis='columns')
+			if processed_data.shape[1] != processed_data.select_dtypes(include=np.number).shape[1]:
+				st.write("Some of your values are non-numeric. First, rows and columns with all non-numeric values are excluded. Then, features with non-numeric values are excluded. You may prioritize dropping samples with some non-numerics by checking the box below.")
+				numerics_checkbox = st.checkbox(label="Drop samples with some non-numerics instead of features with some non-numerics?")
+			
+				compatibilitymatrix = processed_data.applymap(np.isreal)
+				column_compatibility = list(compatibilitymatrix.sum(axis=0))
+				row_compatibility = list(compatibilitymatrix.sum(axis=1))
+				incompatiblecols = []
+				incompatiblerows = []
+				for i in range(len(column_compatibility)):
+					if column_compatibility[i] == 0:
+						incompatiblecols.append(processed_data.columns[i])
+				for i in range(len(row_compatibility)):
+					if row_compatibility[i] == 0:
+						incompatiblerows.append(processed_data.index[i])
+				if len(incompatiblerows) + len(incompatiblecols) > 0:
+					if len(incompatiblerows) > 0:
+						processed_data = processed_data = processed_data.drop(incompatiblerows, axis=0)
+					if len(incompatiblecols) > 0:
+						processed_data = processed_data = processed_data.drop(incompatiblecols, axis=1)
+				if numerics_checkbox == False:
+					processed_data = processed_data.select_dtypes(include=np.number)
+					processed_data = processed_data.dropna(axis='columns')
+				else:
+					badrows = processed_data.applymap(np.isreal).all(1)
+					badrows = badrows[badrows != 1]
+					processed_data = processed_data.drop(badrows.index)
+					processed_data = processed_data.dropna(axis='index')
+					processed_data = processed_data.T
 
 		if feature_radio == "Rows":
 			processed_data = yourdata
 			processed_data = processed_data.drop([select_labels], axis=0)
+			if processed_data.shape[1] != processed_data.select_dtypes(include=np.number).shape[1]:
+				st.write("Some of your values are non-numeric. First, rows and columns with all non-numeric values are excluded. Then, features with non-numeric values are excluded. You may prioritize dropping samples with some non-numerics by checking the box below.")
+				numerics_checkbox = st.checkbox(label="Drop samples with some non-numerics instead of features with some non-numerics?")
+
+				compatibilitymatrix = processed_data.applymap(np.isreal)
+				column_compatibility = list(compatibilitymatrix.sum(axis=0))
+				row_compatibility = list(compatibilitymatrix.sum(axis=1))
+				incompatiblecols = []
+				incompatiblerows = []
+				for i in range(len(column_compatibility)):
+					if column_compatibility[i] == 0:
+						incompatiblecols.append(processed_data.columns[i])
+				for i in range(len(row_compatibility)):
+					if row_compatibility[i] == 0:
+						incompatiblerows.append(processed_data.index[i])
+				if len(incompatiblerows) + len(incompatiblecols) > 0:
+					st.write("Some of your values are non-numeric. Rows and columns with no numeric values will be excluded entirely. For rows and columns with some numeric values, the non-numeric values will be converted to NA by default. You may choose to exclude the entire row or column.")
+					if len(incompatiblecols) > 0:
+						processed_data = processed_data.drop(incompatiblecols, axis=1)
+					if len(incompatiblerows) > 0:
+						processed_data = processed_data.drop(incompatiblerows, axis=0)
+				if numerics_checkbox == False:
+					badrows = processed_data.applymap(np.isreal).all(1)
+					badrows = badrows[badrows != 1]
+					processed_data = processed_data.drop(badrows.index)
+					processed_data = processed_data.dropna(axis='index')
+					processed_data = processed_data.T
+
+				else:
+					processed_data = processed_data.select_dtypes(include=np.number)
+					processed_data = processed_data.dropna(axis='columns')
+
+	else:
+		processed_data = yourdata
+
+		if processed_data.shape[1] != processed_data.select_dtypes(include=np.number).shape[1]:
+			st.write("Some of your values are non-numeric. First, rows and columns with all non-numeric values are excluded. Then, features with non-numeric values are excluded. You may prioritize dropping samples with some non-numerics by checking the box below.")
+			numerics_checkbox = st.checkbox(label="Drop samples with some non-numerics instead of features with some non-numerics?")
+			
 			compatibilitymatrix = processed_data.applymap(np.isreal)
 			column_compatibility = list(compatibilitymatrix.sum(axis=0))
 			row_compatibility = list(compatibilitymatrix.sum(axis=1))
@@ -77,46 +127,35 @@ if your_csv is not None:
 				if row_compatibility[i] == 0:
 					incompatiblerows.append(processed_data.index[i])
 			if len(incompatiblerows) + len(incompatiblecols) > 0:
-				st.write("Some of your values are non-numeric. Rows and columns with no numeric values will be excluded entirely. For rows and columns with some numeric values, the non-numeric values will be converted to NA by default. You may choose to exclude the entire row or column.")
-				if len(incompatiblecols) > 0:
-					processed_data = processed_data.drop(incompatiblecols, axis=1)
 				if len(incompatiblerows) > 0:
 					processed_data = processed_data.drop(incompatiblerows, axis=0)
-			badrows = processed_data.applymap(np.isreal).all(1)
-			badrows = badrows[badrows != 1]
-			processed_data = processed_data.drop(badrows.index)
-			processed_data = processed_data.dropna(axis='index')
-			processed_data = processed_data.T
+				if len(incompatiblecols) > 0:
+					processed_data = processed_data.drop(incompatiblecols, axis=1)
+			if numerics_checkbox == False:
+				if feature_radio == "Rows":
+					badrows = processed_data.applymap(np.isreal).all(1)
+					badrows = badrows[badrows != 1]
+					processed_data = processed_data.drop(badrows.index)
+					processed_data = processed_data.dropna(axis='index')
+					processed_data = processed_data.T
 
-	else:
-		processed_data = yourdata
-		compatibilitymatrix = processed_data.applymap(np.isreal)
-		column_compatibility = list(compatibilitymatrix.sum(axis=0))
-		row_compatibility = list(compatibilitymatrix.sum(axis=1))
-		incompatiblecols = []
-		incompatiblerows = []
-		for i in range(len(column_compatibility)):
-			if column_compatibility[i] == 0:
-				incompatiblecols.append(processed_data.columns[i])
-		for i in range(len(row_compatibility)):
-			if row_compatibility[i] == 0:
-				incompatiblerows.append(processed_data.index[i])
-		if len(incompatiblerows) + len(incompatiblecols) > 0:
-			st.write("Some of your values are non-numeric. First, rows and columns with all non-numeric values are excluded. Then, samples with non-numeric values are excluded.")
-			if len(incompatiblerows) > 0:
-				processed_data = processed_data.drop(incompatiblerows, axis=0)
-			if len(incompatiblecols) > 0:
-				processed_data = processed_data.drop(incompatiblecols, axis=1)
+				if feature_radio == "Columns":
 
-		if feature_radio == "Columns":
-			processed_data = processed_data.select_dtypes(include=np.number)
-			processed_data = processed_data.dropna(axis='columns')
+					processed_data = processed_data.select_dtypes(include=np.number)
+					processed_data = processed_data.dropna(axis='columns')
 
-		if feature_radio == "Rows":
-			processed_data = processed_data.T
-			processed_data = processed_data.select_dtypes(include=np.number)
-			processed_data = processed_data.dropna(axis='columns')
-			processed_data = processed_data.T
+			else: 
+				if feature_radio == "Columns":
+					badrows = processed_data.applymap(np.isreal).all(1)
+					badrows = badrows[badrows != 1]
+					processed_data = processed_data.drop(badrows.index)
+					processed_data = processed_data.dropna(axis='index')
+					processed_data = processed_data.T
+
+				if feature_radio == "Rows":
+
+					processed_data = processed_data.select_dtypes(include=np.number)
+					processed_data = processed_data.dropna(axis='columns')
 
 	
 
@@ -125,49 +164,45 @@ if your_csv is not None:
 	if processed_data.shape[0] <= 2 or processed_data.shape[1] <= 2:
 		st.write('Error: Your data should have at least 3 samples and 3 features.')
 	else:
-		your_scaled = StandardScaler().fit_transform(processed_data)
-		your_pca = PCA()
-		your_transformed = your_pca.fit_transform(your_scaled)
+		go_button = st.button(label="Run PCA")
+		if go_button:
 
-		yourcol_names = [f'Principal Component {i+1}' for i in range(your_transformed.shape[1])]
+			your_scaled = StandardScaler().fit_transform(processed_data)
+			your_pca = PCA()
+			your_transformed = your_pca.fit_transform(your_scaled)
+
+			yourcol_names = [f'Principal Component {i+1}' for i in range(your_transformed.shape[1])]
 
 
 
 
-		your_transformed_df = pd.DataFrame(your_transformed, columns=yourcol_names)
-		st.subheader("Select Principal Components to Plot:")
-		yourxvar = st.selectbox('X-axis:', your_transformed_df.columns)
-		if len(your_transformed_df.columns) > 1:
-			youryvar = st.selectbox('Y-axis:', your_transformed_df.columns, index=1)
-		else: 
-			youryvar = st.selectbox('Y-axis:', your_transformed_df.columns)
-		st.subheader("Plot")
-		if select_labels is not None:
-			if feature_radio == "Columns":
-				if len(incompatiblerows) > 0:
-					numericaldata = yourdata.drop(incompatiblerows, axis=0)
-				else: numericaldata = yourdata
-				your_transformed_df.index = numericaldata.index
-
-				your_transformed_df = pd.concat([your_transformed_df, yourdata[select_labels]], axis=1)
+			your_transformed_df = pd.DataFrame(your_transformed, columns=yourcol_names)
+			st.subheader("Select Principal Components to Plot:")
+			yourxvar = st.selectbox('X-axis:', your_transformed_df.columns)
+			if len(your_transformed_df.columns) > 1:
+				youryvar = st.selectbox('Y-axis:', your_transformed_df.columns, index=1)
 			else: 
-				if len(incompatiblecols) > 0:
-					numericaldata = yourdata.drop(incompatiblecols, axis=1)
-				else: numericaldata = yourdata
-				your_transformed_df.index = numericaldata.T.index
-				your_transformed_df = pd.concat([your_transformed_df, numericaldata.T[select_labels]], axis=1)
+				youryvar = st.selectbox('Y-axis:', your_transformed_df.columns)
+			st.subheader("Plot")
+			if select_labels is not None:
+				if feature_radio == "Columns":
+					if len(incompatiblerows) > 0:
+						numericaldata = yourdata.drop(incompatiblerows, axis=0)
+					else: numericaldata = yourdata
+					your_transformed_df.index = numericaldata.index
 
-			st.write(px.scatter(your_transformed_df, x=yourxvar, y=youryvar,color=select_labels))
-		else: st.write(px.scatter(your_transformed_df, x=yourxvar, y=youryvar))
+					your_transformed_df = pd.concat([your_transformed_df, yourdata[select_labels]], axis=1)
+				else: 
+					if len(incompatiblecols) > 0:
+						numericaldata = yourdata.drop(incompatiblecols, axis=1)
+					else: numericaldata = yourdata
+					your_transformed_df.index = numericaldata.T.index
+					your_transformed_df = pd.concat([your_transformed_df, numericaldata.T[select_labels]], axis=1)
 
-#st.subheader('Explore loadings')
+				st.write(px.scatter(your_transformed_df, x=yourxvar, y=youryvar,color=select_labels))
+			else: st.write(px.scatter(your_transformed_df, x=yourxvar, y=youryvar))
 
-#your_loadings = your_pca.components_.T * np.sqrt(your_pca.explained_variance_)
 
-#your_loadings_df = pd.DataFrame(your_loadings, columns=yourcol_names)
-#your_loadings_df = pd.concat([your_loadings_df, 
-#                         pd.Series(iris.columns[0:4], name='var')], 
-#                         axis=1)
 
 
 
