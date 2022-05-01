@@ -73,7 +73,7 @@ if your_csv is not None:
 					badrows = badrows[badrows != 1]
 					processed_data = processed_data.drop(badrows.index)
 					processed_data = processed_data.dropna(axis='index')
-					processed_data = processed_data.T
+
 
 		if feature_radio == "Rows":
 			processed_data = yourdata
@@ -153,7 +153,7 @@ if your_csv is not None:
 					badrows = badrows[badrows != 1]
 					processed_data = processed_data.drop(badrows.index)
 					processed_data = processed_data.dropna(axis='index')
-					processed_data = processed_data.T
+
 
 				if feature_radio == "Rows":
 
@@ -168,6 +168,7 @@ if your_csv is not None:
 	if processed_data.shape[0] <= 2 or processed_data.shape[1] <= 2:
 		st.write('Error: Your data should have at least 3 samples and 3 features.')
 	else:
+
 		go_button = st.button(label="Run PCA")
 		if go_button:
 
@@ -188,24 +189,22 @@ if your_csv is not None:
 			else: 
 				youryvar = st.selectbox('Y-axis:', your_transformed_df.columns)
 			st.subheader("Plot")
+
 			if select_labels is not None:
 				if feature_radio == "Columns":
-					if len(incompatiblerows) > 0:
-						numericaldata = yourdata.drop(incompatiblerows, axis=0)
-					else: numericaldata = yourdata
-					your_transformed_df.index = numericaldata.index
 
-					your_transformed_df = pd.concat([your_transformed_df, yourdata[select_labels]], axis=1)
+
+					your_transformed_df.index = processed_data.index
+					your_transformed_df = your_transformed_df.join(yourdata[select_labels], how="left")
+
 				else: 
-					if len(incompatiblecols) > 0:
-						numericaldata = yourdata.drop(incompatiblecols, axis=1)
-					else: numericaldata = yourdata
-
-					your_transformed_df.index = numericaldata.T.index
-					your_transformed_df = pd.concat([your_transformed_df, numericaldata.T[select_labels]], axis=1)
+					your_transformed_df.index = processed_data.index
+					your_transformed_df = your_transformed_df.join(yourdata.T[select_labels], how="left")
 
 				st.write(px.scatter(your_transformed_df, x=yourxvar, y=youryvar,color=select_labels))
-			else: st.write(px.scatter(your_transformed_df, x=yourxvar, y=youryvar))
+			else:
+
+				st.write(px.scatter(your_transformed_df, x=yourxvar, y=youryvar))
 
 
 
