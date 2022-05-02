@@ -16,7 +16,7 @@ except ImportError:
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-streamlit_analytics.start_tracking(unsafe_password="123456789")
+streamlit_analytics.start_tracking()
 
 st.title('The Best PCA Tool Ever')
 
