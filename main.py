@@ -2,21 +2,11 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
-try:
-    import streamlit_analytics
-except ImportError:
-    # Install streamlit-analytics on first run (not included in requirements.txt).
-    import subprocess
-    import sys
 
-    subprocess.check_call(
-        [sys.executable, "-m", "pip", "install", "streamlit_analytics"]
-    )
-    import streamlit_analytics
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-streamlit_analytics.start_tracking()
+
 
 st.title('The Best PCA Tool Ever')
 
@@ -219,6 +209,5 @@ if your_csv is not None:
 				st.write(px.scatter(your_transformed_df, x=yourxvar, y=youryvar))
 
 
-streamlit_analytics.stop_tracking()
 
 
