@@ -2,10 +2,11 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
-
+import streamlit_analytics
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+streamlit_analytics.start_tracking(unsafe_password="123456789")
 
 st.title('The Best PCA Tool Ever')
 
@@ -208,16 +209,6 @@ if your_csv is not None:
 				st.write(px.scatter(your_transformed_df, x=yourxvar, y=youryvar))
 
 
-google_analytics_js = """
-<!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZYP8NHPJP1"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-ZYP8NHPJP1');
-</script>
-    """
+streamlit_analytics.stop_tracking()
 
 
