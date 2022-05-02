@@ -210,24 +210,14 @@ if your_csv is not None:
 
 google_analytics_js = """
 <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-ZYP8NHPJP1"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
-      gtag("config", "UA-168384497-1");
-    </script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZYP8NHPJP1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-ZYP8NHPJP1');
+</script>
     """
-#st.components.v1.html(google_analytics_js)
-fb_comments = """
-        <div class="fb-comments" data-href="https://covid19.aipert.org" data-numposts="5" data-width=""></div>
-        """
-#st.components.v1.html(fb_comments)
-st.components.v1.iframe('https://covid19.aipert.org/google_analytics.html', height=1, scrolling=False)
 
 
