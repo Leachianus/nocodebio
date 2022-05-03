@@ -1,2 +1,4 @@
 plotly==4.14.3
 sklearn
+google-cloud-firestore
+streamlit
