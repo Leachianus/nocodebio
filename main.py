@@ -2,10 +2,14 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
-
+from google.cloud import firestore
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+db = firestore.Client.from_service_account_json("streamlitpca-firebase-adminsdk-gtsj8-1630c9b779.json")
+doc_ref = db.collection("tracking").document("uses")
+doc = doc_ref.get()
+docdict = doc.to_dict()
 
 
 st.title('The Best PCA Tool Ever')
@@ -173,6 +177,10 @@ if your_csv is not None:
 
 		go_button = st.button(label="Run PCA")
 		if go_button:
+			doc_ref.set({
+			"usesnumber" : docdict.get("usesnumber")+1
+			})
+
 
 			your_scaled = StandardScaler().fit_transform(processed_data)
 			your_pca = PCA()
@@ -190,7 +198,7 @@ if your_csv is not None:
 				youryvar = st.selectbox('Y-axis:', your_transformed_df.columns, index=1)
 			else: 
 				youryvar = st.selectbox('Y-axis:', your_transformed_df.columns)
-			st.subheader("Plot")
+			st.subheader("Plot Principal Components")
 
 			if select_labels is not None:
 				if feature_radio == "Columns":
@@ -207,6 +215,27 @@ if your_csv is not None:
 			else:
 
 				st.write(px.scatter(your_transformed_df, x=yourxvar, y=youryvar))
+
+
+			loadings = your_pca.components_.T * np.sqrt(your_pca.explained_variance_)
+
+			loadings_df = pd.DataFrame(loadings, columns=yourcol_names)
+			loadings_df = pd.concat([loadings_df, 
+			                         pd.Series(processed_data.columns[0:4], name='var')], 
+			                         axis=1)
+			component = st.selectbox('Select component:', loadings_df.columns)
+
+			bar_chart = px.bar(loadings_df[['var', component]].sort_values(component), 
+			                   x='var', 
+			                   y=component, 
+			                   orientation='v',
+			                   range_y=[-1,1])
+
+
+			st.write(bar_chart)
+
+			st.write(loadings_df)
+
 
 
 
