@@ -286,7 +286,7 @@ if your_csv is not None:
 			export_explained_variance.index = yourcol_names
 			variance_csv = convert_df(export_explained_variance)
 
-			st.download_button(label="Download scores as CSV", data=variance_csv, file_name='PCA_explained_variance.csv',mime='text/csv')
+			st.download_button(label="Download explained variance as CSV", data=variance_csv, file_name='PCA_explained_variance.csv',mime='text/csv')
 
 
 
