@@ -100,7 +100,7 @@ if your_csv is not None:
 					if row_compatibility[i] == 0:
 						incompatiblerows.append(processed_data.index[i])
 				if len(incompatiblerows) + len(incompatiblecols) > 0:
-					st.write("Some of your values are non-numeric. Rows and columns with no numeric values will be excluded entirely. For rows and columns with some numeric values, the non-numeric values will be converted to NA by default. You may choose to exclude the entire row or column.")
+
 					if len(incompatiblecols) > 0:
 						processed_data = processed_data.drop(incompatiblecols, axis=1)
 					if len(incompatiblerows) > 0:
@@ -166,6 +166,7 @@ if your_csv is not None:
 					processed_data = processed_data.select_dtypes(include=np.number)
 					processed_data = processed_data.dropna(axis='columns')
 					processed_data = processed_data.T
+	st.session_state['processed_data'] = processed_data
 
 	
 
@@ -179,62 +180,113 @@ if your_csv is not None:
 		if go_button:
 			doc_ref.set({
 			"usesnumber" : docdict.get("usesnumber")+1
-			})
-
-
+	})
+			select_labels_current = select_labels
+			st.session_state['select_labels_current'] = select_labels_current
 			your_scaled = StandardScaler().fit_transform(processed_data)
 			your_pca = PCA()
 			your_transformed = your_pca.fit_transform(your_scaled)
+			st.session_state['your_scaled'] = your_scaled
+			st.session_state['your_pca'] = your_pca
+			st.session_state['your_transformed'] = your_transformed
 
 			yourcol_names = [f'Principal Component {i+1}' for i in range(your_transformed.shape[1])]
+			st.session_state['yourcol_names'] = yourcol_names
 
 
 
 
 			your_transformed_df = pd.DataFrame(your_transformed, columns=yourcol_names)
-			st.subheader("Select Principal Components to Plot:")
-			yourxvar = st.selectbox('X-axis:', your_transformed_df.columns)
-			if len(your_transformed_df.columns) > 1:
-				youryvar = st.selectbox('Y-axis:', your_transformed_df.columns, index=1)
-			else: 
-				youryvar = st.selectbox('Y-axis:', your_transformed_df.columns)
-			st.subheader("Plot Principal Components")
+			st.session_state['your_transformed_df'] = your_transformed_df
 
-			if select_labels is not None:
+		if 'your_transformed_df' in st.session_state:
+			if 'your_transformed_df' not in locals():
+				your_transformed_df = st.session_state['your_transformed_df']
+				your_pca = st.session_state['your_pca']
+				your_scaled = st.session_state['your_scaled']
+				your_transformed = st.session_state['your_transformed']
+				yourcol_names = st.session_state['yourcol_names']
+				select_labels_current = st.session_state['select_labels_current']
+				processed_data = st.session_state['processed_data']
+
+			st.subheader("Plot PCA Scores")
+			yourxvar = st.selectbox('X-axis:', your_transformed_df.columns, key="PCAxvar")
+			youryvar = st.selectbox('Y-axis:', your_transformed_df.columns, index=1, key="PCAyvar")
+
+			
+
+			if select_labels_current is not None:
 				if feature_radio == "Columns":
 
 
 					your_transformed_df.index = processed_data.index
-					your_transformed_df = your_transformed_df.join(yourdata[select_labels], how="left")
+					your_transformed_df = your_transformed_df.join(yourdata[select_labels_current], how="left")
 
 				else: 
 					your_transformed_df.index = processed_data.index
-					your_transformed_df = your_transformed_df.join(yourdata.T[select_labels], how="left")
+					your_transformed_df = your_transformed_df.join(yourdata.T[select_labels_current], how="left")
 
-				st.write(px.scatter(your_transformed_df, x=yourxvar, y=youryvar,color=select_labels))
+				st.write(px.scatter(your_transformed_df, x=st.session_state['PCAxvar'], y=st.session_state['PCAyvar'],color=select_labels))
 			else:
 
-				st.write(px.scatter(your_transformed_df, x=yourxvar, y=youryvar))
+				st.write(px.scatter(your_transformed_df, x=st.session_state['PCAxvar'], y=st.session_state['PCAyvar']))
+			st.subheader("Scores Matrix")
+			st.write(your_transformed_df)
+
+			@st.cache
+			def convert_df(df):
+				return df.to_csv().encode('utf-8')
+
+			csv = convert_df(your_transformed_df)
+
+			st.download_button(label="Download scores as CSV", data=csv, file_name='PCA_scores.csv',mime='text/csv')
 
 
 			loadings = your_pca.components_.T * np.sqrt(your_pca.explained_variance_)
 
 			loadings_df = pd.DataFrame(loadings, columns=yourcol_names)
 			loadings_df = pd.concat([loadings_df, 
-			                         pd.Series(processed_data.columns[0:4], name='var')], 
+			                         pd.Series(processed_data.columns[0:4], name='features')], 
 			                         axis=1)
+
+			st.subheader("Plot Loadings")
 			component = st.selectbox('Select component:', loadings_df.columns)
 
-			bar_chart = px.bar(loadings_df[['var', component]].sort_values(component), 
-			                   x='var', 
+			bar_chart = px.bar(loadings_df[['features', component]].sort_values(component), 
+			                   x='features', 
 			                   y=component, 
 			                   orientation='v',
 			                   range_y=[-1,1])
 
-
+			
 			st.write(bar_chart)
-
+			st.subheader("Loadings Matrix")
 			st.write(loadings_df)
+
+
+			loadings_csv = convert_df(loadings_df)
+
+			st.download_button(label="Download loadings as CSV", data=loadings_csv, file_name='PCA_loadings.csv',mime='text/csv')
+
+			st.subheader("Plot variance explained by principal components")
+			
+
+			explained_variance_df = pd.DataFrame(your_pca.explained_variance_ratio_)
+			explained_variance_df.columns = ['Percentage of variance explained']
+			variance_bar_chart = px.bar(explained_variance_df*100, 
+							x = explained_variance_df.index+1,
+							y = 'Percentage of variance explained',
+							labels={'x':'Principal Component'},
+			                orientation='v',
+			                range_y=[0,100])
+
+			
+			st.write(variance_bar_chart)
+			export_explained_variance = explained_variance_df
+			export_explained_variance.index = yourcol_names
+			variance_csv = convert_df(export_explained_variance)
+
+			st.download_button(label="Download scores as CSV", data=variance_csv, file_name='PCA_explained_variance.csv',mime='text/csv')
 
 
 
