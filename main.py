@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 from google.cloud import firestore
+import streamlit.components.v1 as components
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
@@ -11,8 +12,9 @@ doc_ref = db.collection("tracking").document("uses")
 doc = doc_ref.get()
 docdict = doc.to_dict()
 
+st.write("If you have any issues, questions, comments, or anything else, email me at skkaufman04@gmail.com")
+st.title('A Better Way to do Principal Component Analysis')
 
-st.title('A Better Way to Do Principal Component Analysis')
 
 your_csv = st.file_uploader("Upload your data",type=("csv","tsv"))
 yourdata = None
@@ -24,7 +26,7 @@ processed_data = None
 if your_csv is not None:
 	incompatiblecols = []
 	incompatiblerows = []
-	st.subheader("Raw Data")
+	
 	if your_csv.type == "text/csv":
 		yourdata = pd.read_csv(your_csv)
 
@@ -32,6 +34,7 @@ if your_csv is not None:
 
 	else:
 		yourdata = pd.read_csv(your_csv, sep='\t')
+	st.subheader("Raw Data")
 	st.write(yourdata)
 
 	feature_radio = st.radio("My features are:", ["Rows","Columns"], index=0)
