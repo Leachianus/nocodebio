@@ -12,7 +12,7 @@ doc = doc_ref.get()
 docdict = doc.to_dict()
 
 
-st.title('The Best PCA Tool Ever')
+st.title('a better way to do principal component analysis')
 
 your_csv = st.file_uploader("Upload your data",type=("csv","tsv"))
 yourdata = None
