@@ -12,7 +12,7 @@ doc = doc_ref.get()
 docdict = doc.to_dict()
 
 
-st.title('a better way to do principal component analysis')
+st.title('A Better Way to do Principal Component Analysis')
 
 your_csv = st.file_uploader("Upload your data",type=("csv","tsv"))
 yourdata = None
@@ -52,7 +52,7 @@ if your_csv is not None:
 		if feature_radio == "Columns":
 			processed_data = yourdata.drop([select_labels], axis=1)
 			if processed_data.shape[1] != processed_data.select_dtypes(include=np.number).shape[1]:
-				st.write("Some of your values are non-numeric. First, rows and columns with all non-numeric values are excluded. Then, features with non-numeric values are excluded. You may prioritize dropping samples with some non-numerics by checking the box below.")
+				st.write("Some of your values are non-numeric. First, rows and columns with all non-numeric values are excluded. Then, features with non-numeric values are excluded by default.")
 				numerics_checkbox = st.checkbox(label="Drop samples with some non-numerics instead of features with some non-numerics?")
 			
 				compatibilitymatrix = processed_data.applymap(np.isreal)
@@ -85,7 +85,7 @@ if your_csv is not None:
 			processed_data = yourdata
 			processed_data = processed_data.drop([select_labels], axis=0)
 			if processed_data.shape[1] != processed_data.select_dtypes(include=np.number).shape[1]:
-				st.write("Some of your values are non-numeric. First, rows and columns with all non-numeric values are excluded. Then, features with non-numeric values are excluded. You may prioritize dropping samples with some non-numerics by checking the box below.")
+				st.write("Some of your values are non-numeric. First, rows and columns with all non-numeric values are excluded. Then, features with non-numeric values are excluded by default.")
 				numerics_checkbox = st.checkbox(label="Drop samples with some non-numerics instead of features with some non-numerics?")
 
 				compatibilitymatrix = processed_data.applymap(np.isreal)
@@ -121,7 +121,7 @@ if your_csv is not None:
 		processed_data = yourdata
 
 		if processed_data.shape[1] != processed_data.select_dtypes(include=np.number).shape[1]:
-			st.write("Some of your values are non-numeric. First, rows and columns with all non-numeric values are excluded. Then, features with non-numeric values are excluded. You may prioritize dropping samples with some non-numerics by checking the box below.")
+			st.write("Some of your values are non-numeric. First, rows and columns with all non-numeric values are excluded. Then, features with non-numeric values are excluded by default.")
 			numerics_checkbox = st.checkbox(label="Drop samples with some non-numerics instead of features with some non-numerics?")
 			
 			compatibilitymatrix = processed_data.applymap(np.isreal)
@@ -286,7 +286,7 @@ if your_csv is not None:
 			export_explained_variance.index = yourcol_names
 			variance_csv = convert_df(export_explained_variance)
 
-			st.download_button(label="Download explained variance as CSV", data=variance_csv, file_name='PCA_explained_variance.csv',mime='text/csv')
+			st.download_button(label="Download scores as CSV", data=variance_csv, file_name='PCA_explained_variance.csv',mime='text/csv')
 
 
 
