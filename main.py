@@ -12,7 +12,7 @@ doc = doc_ref.get()
 docdict = doc.to_dict()
 
 
-st.title('A Better Way to do Principal Component Analysis')
+st.title('A Better Way to Do Principal Component Analysis')
 
 your_csv = st.file_uploader("Upload your data",type=("csv","tsv"))
 yourdata = None
