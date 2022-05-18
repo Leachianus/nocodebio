@@ -13,7 +13,7 @@ doc = doc_ref.get()
 docdict = doc.to_dict()
 
 st.write("If you have any issues, questions, comments, or anything else, email me at skkaufman04@gmail.com")
-st.title('A Better Way to Do Principal Component Analysis')
+st.title('Principle Component Analysis Made Easy')
 
 
 your_csv = st.file_uploader("Upload your data",type=("csv","tsv"))
