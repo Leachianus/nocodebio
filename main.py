@@ -2,15 +2,11 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
-from google.cloud import firestore
-import streamlit.components.v1 as components
+
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-db = firestore.Client.from_service_account_json("streamlitpca-firebase-adminsdk-gtsj8-1630c9b779.json")
-doc_ref = db.collection("tracking").document("uses")
-doc = doc_ref.get()
-docdict = doc.to_dict()
+
 
 st.write("If you have any issues, questions, comments, or anything else, email me at skkaufman04@gmail.com")
 st.title('Principle Component Analysis Made Easy')
@@ -181,9 +177,6 @@ if your_csv is not None:
 
 		go_button = st.button(label="Run PCA")
 		if go_button:
-			doc_ref.set({
-			"usesnumber" : docdict.get("usesnumber")+1
-	})
 			select_labels_current = select_labels
 			st.session_state['select_labels_current'] = select_labels_current
 			your_scaled = StandardScaler().fit_transform(processed_data)
