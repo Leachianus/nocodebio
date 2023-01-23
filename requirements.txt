@@ -1,4 +1,4 @@
 plotly==5.11.0
 
-sklearn
+sklearn==1.2
 streamlit==1.17.0
